@@ -27,8 +27,7 @@ async fn main() -> std::io::Result<()> {
     let db_pool = PostgresPool::new().await;
     let db_pool = match db_pool {
         Ok(pool) => {println!("Connected to database");
-
-            pool.pool    },
+            pool.pool },
         //throw error
         Err(e) => {
             println!("Error connecting to database: {}", e);

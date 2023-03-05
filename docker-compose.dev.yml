@@ -1,0 +1,36 @@
+version: '3'
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: example
+    ports:
+      - 5432:5432 # expose Postgres port
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      POSTGRES_SERVER_ADDR: db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+    depends_on:
+      - db # depends on Postgres service
+    ports:
+      - 8080:8080 # expose backend port
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    depends_on:
+      - backend # depends on backend service
+    environment:
+      BACKEND_SERVER_ADDR: backend:8000
+    ports:
+      - 3000:3000 # expose frontend port
