@@ -11,14 +11,18 @@ services:
 
   backend:
     build:
-      context: .
-      dockerfile: backend/Dockerfile
+      context: ./backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./backend:/app
     environment:
       POSTGRES_SERVER_ADDR: db
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
+      PORT: 8080
+   
     depends_on:
       - db # depends on Postgres service
     ports:
@@ -26,11 +30,14 @@ services:
 
   frontend:
     build:
-      context: .
-      dockerfile: frontend/Dockerfile
+      context: ./frontend
+      dockerfile: Dockerfile
+    volumes:
+      - ./frontend:/app
     depends_on:
       - backend # depends on backend service
     environment:
       BACKEND_SERVER_ADDR: backend:8000
     ports:
       - 3000:3000 # expose frontend port
+

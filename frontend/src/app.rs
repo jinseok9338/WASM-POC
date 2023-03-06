@@ -19,7 +19,7 @@ pub fn App(cx: Scope) -> impl IntoView {
         <Stylesheet id="leptos" href="/pkg/leptos_start.css"/>
 
         // sets the document title
-        <Title text="Welcome to Leptos"/>
+        <Title text="Welcome to My App"/>
 
         <Router>
             <main>
@@ -40,7 +40,7 @@ pub fn App(cx: Scope) -> impl IntoView {
     }
 }
 
-#[component]
+#[component] 
 fn HomePage(cx: Scope) -> impl IntoView {
     // load the posts
     let posts =
@@ -58,7 +58,8 @@ fn HomePage(cx: Scope) -> impl IntoView {
 
 
     view! { cx,
-        <h1>"My Great Blog"</h1>
+        <h1>"My Great Blogs"</h1>
+       
         <Suspense   fallback=move || view! { cx, <p>"Loading posts..."</p> }   >
             <ul>{posts_view}</ul>
         </Suspense>
