@@ -1,12 +1,13 @@
+
 use dotenv::dotenv;
 use std::env;
 use crate::postgresql::config::PostGresConfig;
-use deadpool_postgres::Pool;
+
 use tokio_postgres::Error;
 use tokio_postgres::NoTls;
-
+use deadpool_postgres::Object;
 pub struct PostgresPool {
-    pub pool: Pool,
+    pub con: Object,
 }
 
 impl PostgresPool {
@@ -29,7 +30,13 @@ impl PostgresPool {
         config.pg.dbname = Some("postgres".to_string());
 
         let pool = config.pg.create_pool(None, NoTls).unwrap();
-        Ok(Self { pool })
+        let con = pool.get().await.unwrap();
+
+        Ok(Self { con })
     }
+
+// after making db pool available to the app, we can use it to create a connection to the database
+
 }
+
 
