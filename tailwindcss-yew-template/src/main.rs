@@ -113,23 +113,15 @@ impl App {
         
         let server_url: &str = env!("SERVER_URL");
      
-        let body = json!({
-            "name": "jinseok"
-        });
-        
-      
-        let body_str = to_string(&body).unwrap();
-        
         let res = reqwest_wasm::Client::new()
-            .post(format!("{}/login",server_url))
-            .header("Content-Type", "application/json")
-            .body(body_str)
-            .send()
-            .await
-            .unwrap()
-            .text()
-            .await
-            .unwrap();
+        .get(format!("{}/login", server_url))
+        .header("Content-Type", "application/json")
+        .send()
+        .await
+        .unwrap()
+        .text()
+        .await
+        .unwrap();
        return res;
 
        
