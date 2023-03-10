@@ -1,0 +1,16 @@
+{
+  "name": "tailwindcss-yew-template",
+  "version": "0.1.0",
+  "description": "",
+  "scripts": {
+    "setup": "rustup target add wasm32-unknown-unknown && cargo install trunk && npm i -g tailwindcss concurrently",
+    "dev": "concurrently \"npm run dev:css\" \"npm run dev:serve\"",
+    "dev:css": "tailwindcss -c tailwind.config.js -o tailwind.css --watch",
+    "dev:serve": "SERVER_URL=http://127.0.0.1:8080 trunk serve",
+    "prod": "npm run prod:css && trunk build --release",
+    "prod:css": "tailwindcss -c tailwind.config.js -o tailwind.css --minify"
+  },
+  "dependencies": {
+    "tailwindcss": "^3.2.7"
+  }
+}
