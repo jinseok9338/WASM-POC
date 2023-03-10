@@ -14,3 +14,4 @@ dotenv = "0.15.0"
 serde = { version = "1.0.137", features = ["derive"] }
 config = "0.13.1"
 deadpool-postgres = { version = "0.10.2", features = ["serde"] }
+actix-cors = "0.6.4"
