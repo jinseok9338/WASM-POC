@@ -1,13 +1,14 @@
 extern crate reqwest_wasm;
 
-use js_sys::Reflect;
+use js_sys::{Reflect, Object};
 use web_sys::HtmlScriptElement;
 use yew::prelude::*;
 use dotenv::dotenv;
-use std::env;
+use std::{env, cell::RefCell, rc::Rc};
 use wasm_bindgen::{prelude::{wasm_bindgen, Closure}, JsValue, JsCast};
 
 mod data;
+
 
 
 enum Msg {
@@ -59,7 +60,15 @@ impl Component for App {
         let onclick = Callback::from(move |_| {
             log::info!("Login request");
             wasm_bindgen_futures::spawn_local(async move {
-                let res = App::login_request().await;
+                //get kakao object from window
+                let window = web_sys::window().expect("no global `window` exists");
+                let kakao = window
+                    .get("Kakao")
+                    .expect("Kakao object not found")
+                    .dyn_into::<JsValue>()
+                    .expect("Failed to cast Kakao object to Object");
+                log::info!("Kakao object: {:?}", kakao);
+                let res = App::kakao_login(&kakao);
                 log::info!("Login request response: {:?}", res);
                 // Use res here
             });
@@ -126,7 +135,7 @@ impl App {
     
         // create script element
         let script = document.create_element("script")?.dyn_into::<HtmlScriptElement>()?;
-        script.set_src("https://t1.kakaocdn.net/kakao_js_sdk/2.1.0/kakao.min.js");
+        script.set_src("https://developers.kakao.com/sdk/js/kakao.min.js");
         // append script to body
         // add event listener for load event
         let closure = Closure::wrap(Box::new(|| {
@@ -145,36 +154,67 @@ impl App {
         Ok(())
     }
 
-    async fn login_request() -> String   {
-        dotenv().ok();
+
+
+    
+        pub fn kakao_login(kakao: &JsValue) {
+            let auth = js_sys::Reflect::get(kakao, &"Auth".into()).unwrap();
+            
+         
+            let login = js_sys::Reflect::get(&auth.as_ref().into(), &"login".into()).unwrap();
+          
+            let login_function = login.dyn_into::<js_sys::Function>().unwrap();
         
-        let server_url: &str = env!("SERVER_URL");
-        let global = js_sys::global();
-        let kakao = Reflect::get(&global, &JsValue::from_str("Kakao")).expect("Kakao object not found");
-        let auth = Reflect::get(&kakao, &JsValue::from_str("Auth")).expect("Auth object not found");
-        let authorize_method = Reflect::get(&auth, &JsValue::from_str("authorize")).expect("authorize method not found");
-        let authorize_fn = authorize_method.dyn_ref::<js_sys::Function>().expect("Failed to cast authorize method to Function");
-    
-        let redirect_uri = JsValue::from_str("http://127.0.0.1:3000");
-        let options = js_sys::Object::new();
-        Reflect::set(&options, &JsValue::from_str("redirectUri"), &redirect_uri).expect("Failed to set redirectUri option");
-    
-        authorize_fn.call1(&auth, &options).expect("Failed to call authorize method");
+            let api = js_sys::Reflect::get(kakao, &"API".into()).unwrap();
+            let api = Rc::new(RefCell::new(api));
+            let request = js_sys::Reflect::get(&api.borrow().as_ref().into(), &"request".into()).unwrap();
+            let request_function = request.dyn_into::<js_sys::Function>().unwrap();
+            
+            let success_callback = {
+                let api = Rc::<_>::clone(&api);
 
-        let res = reqwest_wasm::Client::new()
-        .get(format!("{}/login", server_url))
-        .header("Content-Type", "application/json")
-        .send()
-        .await
-        .unwrap()
-        .text()
-        .await
-        .unwrap();
-       return res;
-
-       
+                Closure::wrap(Box::new(move |_response: JsValue| {
+                    let success_callback = {
+                       
+                        Closure::wrap(Box::new(move |response: JsValue| {
+                            log::info!("Kakao.API.request succeeded {:?}",response);
+                        }) as Box<dyn FnMut(_)>)
+                    };
+            
+                    let fail_callback = {
+              
+                        Closure::wrap(Box::new(move |_error: JsValue| {
+                            log::warn!("Kakao.API.request failed");
+                        }) as Box<dyn FnMut(_)>)
+                    };
+            
+                    let options = js_sys::Object::new();
+                    js_sys::Reflect::set(&options.clone().into(), &"url".into(), &"/v2/user/me".into()).unwrap();
+                    js_sys::Reflect::set(&options.clone().into(), &"success".into(), success_callback.as_ref().unchecked_ref()).unwrap();
+                    js_sys::Reflect::set(&options.clone().into(), &"fail".into(), fail_callback.as_ref().unchecked_ref()).unwrap();
+            
+                    request_function.call1(&api.borrow().as_ref().into(), &options.into()).unwrap();
+            
+                    success_callback.forget();
+                    fail_callback.forget();
+                }) as Box<dyn FnMut(_)>)
+            };
+        
+            let fail_callback = Closure::<_>::wrap(Box::<_>::new(move |_error: JsValue| {
+                log::warn!("Kakao.Auth.login failed");
+            }) as Box<dyn FnMut(_)>);
+        
+            let options = js_sys::Object::new();
+            js_sys::Reflect::set(&options.clone().into(), &"success".into(), success_callback.as_ref().unchecked_ref()).unwrap();
+            js_sys::Reflect::set(&options.clone().into(), &"fail".into(), fail_callback.as_ref().unchecked_ref()).unwrap();
+        
+            login_function.call1(&auth.into(), &options.into()).unwrap();
+        
+            success_callback.forget();
+            fail_callback.forget();
+        }
     }
-}
+
 
 fn main() {
     wasm_logger::init(wasm_logger::Config::default());
