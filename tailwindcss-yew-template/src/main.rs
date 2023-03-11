@@ -1,11 +1,11 @@
 extern crate reqwest_wasm;
 
-use js_sys::{Reflect, Object};
+use js_sys::Reflect;
 use web_sys::HtmlScriptElement;
 use yew::prelude::*;
-use dotenv::dotenv;
-use std::{env, cell::RefCell, rc::Rc};
-use wasm_bindgen::{prelude::{wasm_bindgen, Closure}, JsValue, JsCast};
+
+use std::{cell::RefCell, rc::Rc};
+use wasm_bindgen::{prelude::Closure, JsValue, JsCast};
 
 mod data;
 
@@ -55,7 +55,7 @@ impl Component for App {
         }
     }
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
+    fn view(&self, _ctx: &Context<Self>) -> Html {
         // set onclick to call login_request()
         let onclick = Callback::from(move |_| {
             log::info!("Login request");
@@ -144,7 +144,8 @@ impl App {
             let kakao = Reflect::get(&global, &JsValue::from_str("Kakao")).expect("Kakao object not found");
             let init_method = Reflect::get(&kakao, &JsValue::from_str("init")).expect("init method not found");
             let init_fn = init_method.dyn_ref::<js_sys::Function>().expect("Failed to cast init method to Function");
-            let key = JsValue::from_str("894b7703bad3d3d3641c1d06c9bde7fc");
+            let api_key = env!("KAKAO_API_KEY");
+            let key = JsValue::from_str(api_key);
             init_fn.call1(&kakao, &key).expect("Failed to call init method");
         }) as Box<dyn Fn()>);
 
@@ -155,14 +156,9 @@ impl App {
     }
 
 
-
-    
         pub fn kakao_login(kakao: &JsValue) {
             let auth = js_sys::Reflect::get(kakao, &"Auth".into()).unwrap();
-            
-         
             let login = js_sys::Reflect::get(&auth.as_ref().into(), &"login".into()).unwrap();
-          
             let login_function = login.dyn_into::<js_sys::Function>().unwrap();
         
             let api = js_sys::Reflect::get(kakao, &"API".into()).unwrap();
