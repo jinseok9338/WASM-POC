@@ -1,6 +1,8 @@
 use std::{cell::RefCell, rc::Rc};
 
 use wasm_bindgen::{prelude::Closure, JsCast, JsValue};
+use web_sys::MouseEvent;
+use yew::Callback;
 
 pub fn kakao_login(kakao: &JsValue) {
     let auth = js_sys::Reflect::get(kakao, &"Auth".into()).unwrap();
@@ -74,4 +76,23 @@ pub fn kakao_login(kakao: &JsValue) {
     login_function.call1(&auth.into(), &options.into()).unwrap();
     success_callback.forget();
     fail_callback.forget();
+}
+
+pub fn kakao_login_callback() -> Callback<MouseEvent> {
+    Callback::from(move |_event:MouseEvent| {
+        log::info!("Login request");
+        wasm_bindgen_futures::spawn_local(async move {
+            //get kakao object from window
+            let window = web_sys::window().expect("no global `window` exists");
+            let kakao = window
+                .get("Kakao")
+                .expect("Kakao object not found")
+                .dyn_into::<JsValue>()
+                .expect("Failed to cast Kakao object to Object");
+            log::info!("Kakao object: {:?}", kakao);
+            let res = kakao_login(&kakao);
+            log::info!("Login request response: {:?}", res);
+            // Use res here
+        });
+    })
 }
