@@ -1,7 +1,7 @@
 use yew::prelude::*;
 use yew_router::prelude::*;
 
-use crate::pages::login::Login;
+use crate::pages::{login::Login, pay::Pay};
 
 #[derive(Routable, PartialEq, Eq, Clone, Debug)]
 pub enum Route {
@@ -23,7 +23,7 @@ pub fn switch(routes: Route) -> Html {
             html! { <h1>{"404"}</h1> }
         }
         Route::Pay => {
-            html! { <h1>{"to Be done"}</h1> }
+            html! { <Pay/> }
         },
     }
 }
