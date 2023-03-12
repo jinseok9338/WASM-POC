@@ -1,7 +1,8 @@
 /target
+.env
 /.idea/
 tailwind.css
 Cargo.lock
 /dist/
 node_modules/
-.env
+
