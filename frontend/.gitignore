@@ -5,4 +5,4 @@ tailwind.css
 Cargo.lock
 /dist/
 node_modules/
-
+/src/package.js
