@@ -15,7 +15,7 @@ Yew 는 특히 React 와 같은 Class Component( Struct Component), Functional C
 ## 결론 
 결론부터 말하자면 두가지 다 가능 하다.
 
-### Javascript SDK 를 Rust 코드에서 사용하기ㅇ
+### Javascript SDK 를 Rust 코드에서 사용하기
 카카오 로그인 을 하고 싶다고 가정해 보자. 카카오는 카카오 SDK 를 이용한 소셜 로그인이 가능하다. 보통의 경우에는 `<script> tag` 에 src 를 추가하여 소셜 로그인 을 가능 하게 하는 객체에 접근한다.
 아이디어는 비슷하다. 일단 카카오 SDK 를 넣는 script tag 를 만들어야 한다.
 ```
