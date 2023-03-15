@@ -8,6 +8,10 @@ Yew 는 특히 React 와 같은 Class Component( Struct Component), Functional C
 3. 그러나 Javascript 에 의존성이 있는 기능을 구현할 수 있을까 하는 의문이 생겼다. -> 예를 들어 Kakao 소셜 로그인은 웹에서 구현 하려면 Kakao 가 제공하는 Javascript SDK 에 의존 하는 방법 밖에 없다. 
 4. 또한 Rust 에서도 강력한 crate 라는 패키지 매니저가 있지만 과연 npm package 를 써야 하는 경우 npm 모듈을 사용할 수 있을까라는 의문이 생겼다.
 
+## 목표
+1. Javascript SDK 를 Rust 코드 베이스에서 쓸 수 있을까?
+2. Npm 모듈을 Rust 코드 베이스에서 쓸 수 있을까?
+
 ## 결론 
-결론 부터 
+결론부터 말하자면 두가지 다 가능 하다.
 
