@@ -58,4 +58,25 @@ script.add_event_listener_with_callback("load", closure.as_ref().unchecked_ref()
 
 그렇게 만들어진 init_kako 함수를 Page 가 처음 로드 될때 넣어준다. -> Kakao 객체가 init 된것을 확인 할 수 있다.
 -> 이미지 넣기
-https://github.com/jinseok9338/WASM-POC/blob/main/frontend/src/Kakao/init.rs 에서도 확인이 가능하다.
+https://github.com/jinseok9338/WASM-POC/blob/main/frontend/src/Kakao/init.rs 에서 코드를 확인 할 수 있다.
+
+### Npm Package 이용하기
+다음과 같은 함수를 Rust code 에서 사용하고 싶다고 가정해 보자
+```
+// package.js
+
+import { format } from 'date-fns';
+
+export function Dateformat(date, formatString) {
+    return format(date, formatString);
+}
+```
+
+위의 자바 스크립트 코드는 date-fns 모듈에 의존적이다.
+
+그래서 다음과 
+
+
+
+
+
