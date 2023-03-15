@@ -15,3 +15,47 @@ Yew 는 특히 React 와 같은 Class Component( Struct Component), Functional C
 ## 결론 
 결론부터 말하자면 두가지 다 가능 하다.
 
+### Javascript SDK 를 Rust 코드에서 사용하기ㅇ
+카카오 로그인 을 하고 싶다고 가정해 보자. 카카오는 카카오 SDK 를 이용한 소셜 로그인이 가능하다. 보통의 경우에는 `<script> tag` 에 src 를 추가하여 소셜 로그인 을 가능 하게 하는 객체에 접근한다.
+아이디어는 비슷하다. 일단 카카오 SDK 를 넣는 script tag 를 만들어야 한다.
+```
+// window 객체에 접근한다.
+let window = web_sys::window().expect("no global `window` exists");
+
+let document = window.document().expect("should have a document on window");
+let body = document.body().expect("document should have a body");
+
+// create script element
+let script = document
+    .create_element("script")?
+    .dyn_into::<HtmlScriptElement>()?;
+script.set_src("https://developers.kakao.com/sdk/js/kakao.min.js");
+```
+
+이후 스크립트가 로드 되면 Kakao.init 을 호출하는 closure (callback) 을 만들어서 add_event_listener_with_callback 함수에 넣어준다
+```
+// add event listener for load event
+let closure = Closure::wrap(Box::new(|| {
+    // define Kakao object here
+    let global = js_sys::global();
+    let kakao =
+        Reflect::get(&global, &JsValue::from_str("Kakao")).expect("Kakao object not found");
+    let init_method =
+        Reflect::get(&kakao, &JsValue::from_str("init")).expect("init method not found");
+    let init_fn = init_method
+        .dyn_ref::<js_sys::Function>()
+        .expect("Failed to cast init method to Function");
+
+    let api_key = env!("KAKAO_API_KEY");
+    let key = JsValue::from_str(api_key);
+    init_fn
+        .call1(&kakao, &key)
+        .expect("Failed to call init method");
+}) as Box<dyn Fn()>);
+
+script.add_event_listener_with_callback("load", closure.as_ref().unchecked_ref())?;
+```
+
+그렇게 만들어진 init_kako 함수를 Page 가 처음 로드 될때 넣어준다. -> Kakao 객체가 init 된것을 확인 할 수 있다.
+-> 이미지 넣기
+https://github.com/jinseok9338/WASM-POC/blob/main/frontend/src/Kakao/init.rs 에서도 확인이 가능하다.
