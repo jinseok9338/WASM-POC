@@ -74,8 +74,56 @@ export function Dateformat(date, formatString) {
 
 위의 자바 스크립트 코드는 date-fns 모듈에 의존적이다.
 
-그래서 다음과 
+그래서 다음과 같이 가져오면 브라우저에서는 date-fns 모듈을 가지고 오지 못해서 에러를 반환한다. (package.js 는 가져오지만 date-fns 는 가져오지 못한다)
+```
+use js_sys::Date;
+use wasm_bindgen::prelude::*;
 
+#[wasm_bindgen(module = "/package.js")]
+extern "C" {
+    fn Dateformat(date: &Date, formatString: &str) -> String;
+}
+
+#[wasm_bindgen]
+pub fn my_format(date: &Date, format_string: &str) -> String {
+    Dateformat(date, format_string)
+}
+```
+그러나 생각해 보면 자바스크립트만 가지고 오면 되는것이다. 그래서 요즘 web-framwork 의 방식을 빌리기로 하였다
+자바스크립트를 webpack 을 이용하여 번들링 해주기로 하였다. 여기서는 esbuld 를 사용하기로 하자
+
+1. esbuild 를 설치한다. `npm run esbuild`
+2. 프로젝트 루트 디렉토리에 `exbuild.js` 파일을 만든다. 
+```
+// esbuild
+esbuild.build({
+  entryPoints: ['package.js'],
+  bundle: true,
+  outfile: 'src/package.js',
+  format: 'esm',
+  minify: true,
+}).catch(() => process.exit(1));
+```
+
+3. package.json 에 `"esbuild":"node esbuild.js"` 명령어를 추가한다.
+4. src/package.js 를 보면 빌드된 자바 스크립트가 보일 것이다.
+5. 빌드된 자바 스크립트를 가져와서 쓴다.
+```
+use js_sys::Date;
+use wasm_bindgen::prelude::*;
+
+#[wasm_bindgen(module = "/package.js")]
+extern "C" {
+    fn Dateformat(date: &Date, formatString: &str) -> String;
+}
+
+#[wasm_bindgen]
+pub fn my_format(date: &Date, format_string: &str) -> String {
+    Dateformat(date, format_string)
+}
+```
+정상적으로 작동 하는것을 확인 할 수 있다. ![image](https://user-images.githubusercontent.com/27854958/225205474-5c192f2a-ac75-4bdf-b0e0-1ab97f570b82.png)
+예시는 https://github.com/jinseok9338/WASM-POC/blob/main/frontend/src/pages/date_fns.rs 에서 확인 가능하다.
 
 
 
